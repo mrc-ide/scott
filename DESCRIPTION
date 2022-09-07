@@ -9,4 +9,5 @@ Description: Simulation of transmission trees (a record of who infected whom) pr
 Depends: phydynR (>= 0.2.0)
 Imports: ape
 License: MIT
+Encoding: UTF-8
 RoxygenNote: 7.2.0

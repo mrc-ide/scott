@@ -14,8 +14,10 @@ scott(tfgy, s, X, min_dt = NULL, max_dt = NULL, event_tol = 1)
 \item{X}{matrix of sample states (probabilities)}
 }
 \value{
-A phylogenetic tree which contains a $waifw attribute. This is a data frame containing transmission pairs and time of transmission.
+A phylogenetic tree which contains a $waifw attribute. This is a
+   data frame containing transmission pairs and time of transmission.
 }
 \description{
-This function will return a phylogeny in the `ape` package format with additional attributes showing who infected whom.
+This function will return a phylogeny in the `ape` package format with
+additional attributes showing who infected whom.
 }
