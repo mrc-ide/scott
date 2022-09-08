@@ -5,7 +5,9 @@
 #' @param tfgy output of demo/epi simulation
 #' @param s vector of sample times 
 #' @param X matrix of sample states (probabilities)
-#' @return A phylogenetic tree which contains a $waifw attribute. This is a data frame containing transmission pairs and time of transmission. 
+#' @return A phylogenetic tree which contains a $waifw attribute. 
+#'    This is a data frame containing transmission pairs and time of 
+#'    transmission.
 #' @export 
 simtree <- function(
   tfgy
