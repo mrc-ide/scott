@@ -7,7 +7,7 @@
 #' @param X matrix of sample states (probabilities)
 #' @return A phylogenetic tree which contains a $waifw attribute. This is a data frame containing transmission pairs and time of transmission. 
 #' @export 
-scott <- function(
+simtree <- function(
   tfgy
   , s
   , X 
@@ -42,7 +42,6 @@ scott <- function(
 	extant <- rep( FALSE, N )
 	sampled <- rep( FALSE, n )
 	
-	
 	edge <- matrix( integer(0), nrow = N-1, ncol = 2 )
 	edge.length <- integer( N -1 )
 	tip.label <- paste0( 'tip_', 1:n)
@@ -59,7 +58,7 @@ scott <- function(
 	tstart <- max( s) 
 	xt = tstart 
 	dxt <- -0 
-	while(  (ncos < nnode)  &  (xt > fint)  ){
+	while( (ncos < nnode)  &  (xt > fint)  ){
 		# update xt  
 		xt <- xt  + dxt  # dxt negative 
 		xi <- which.min( xt <= times ) #??should get closest to xt 
@@ -87,6 +86,7 @@ scott <- function(
 			corate <- sum( pwcorates )
 			ncos <- rpois(1, corate * abs(dxt) )
 		} else{ 
+			corate <- 0 
 			ncos <- 0 
 		}
 		# update indiv mig rates 
@@ -149,30 +149,40 @@ scott <- function(
 		}
 		# do mig's 
 		#we1 <- which( extant ) 
-		if ( nmigs > 0 ) for ( i in 1:nmigs )
-		{
-			j <- sample.int( length( migrates ), prob = migrates, size = 1 )
-			u <- we[ j ] 
-			if ( extant[u] )# maybe not extant if co happened 
+		if ( nmigs > 0 ){
+			# note robust against event that lineage changse more than once in a time step
+			js <- unique(  sample.int( length( migrates ), prob = migrates, size = nmigs , replace=TRUE ) )
+			for ( i in 1:length(js) )
 			{
-				k <- sample.int( ncol(rG) , prob = rG[ states[u],] , size = 1) 
-				states[u] <- k
+				j <- js[i] 
+				u <- we[ j ] 
+				if ( extant[u] & (sum(rG[states[u],]) > 0) )# maybe not extant if co happened 
+				{
+					k <- sample.int( ncol(rG) , prob = rG[ states[u],] , size = 1) 
+					states[u] <- k
+				}
 			}
 		}
 		# transmission migs 
-		if ( nmigsF > 0 )for ( i in 1:nmigsF )
-		{
-			j <- sample.int( length( migratesF ), prob = migratesF, size=1 )
-			u <- we[ j ] 
-			if ( extant[u] ) # maybe not extant if co happened 
+		if ( nmigsF > 0 ){
+			# note robust against event that lineage changse more than once in a time step
+			js <- unique(sample.int( length( migratesF ), prob = migratesF, size = min(nmigsF, length(migratesF)), replace=TRUE ) )
+			
+			for ( i in 1:length( js ) )
 			{
-				# note this doesn't necessarily change state, but will update waifw
-				k <- sample.int( ncol(rFmig) , prob = rFmig[ states[u] ,] , size = 1) 
-				states[u] <- k # may be same as previous state
-				# fill waifw 
-				nwaifw <- nwaifw + 1 
-				waifw[[ nwaifw]] <- c(  N+nwaifw, pids[u], xt  ) 
-				pids[u] <- N + nwaifw 
+				j <- js[i]
+				u <- we[ j ] 
+				if ( extant[u] & (sum(rFmig[states[u],]) > 0) ) # maybe not extant if co happened 
+				{
+					# note this doesn't necessarily change state, but will update waifw
+					k <-  sample.int( ncol(rFmig) , prob = rFmig[ states[u] ,] , size = 1) 
+					
+					states[u] <- k # may be same as previous state
+					# fill waifw 
+					nwaifw <- nwaifw + 1 
+					waifw[[ nwaifw ]] <- c(  N+nwaifw, pids[u], xt  ) 
+					pids[u] <- N + nwaifw 
+				}
 			}
 		}
 	}

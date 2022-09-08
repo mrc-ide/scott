@@ -1,7 +1,7 @@
 Package: scott
 Type: Package
 Title: Structured coalescent simulation of transmission trees 
-Version: 0.0.1
+Version: 0.0.2
 Date: 2022-08-17
 Author: Erik Volz <e.volz@imperial.ac.uk>
 Maintainer: Erik Volz <e.volz@imperial.ac.uk>
