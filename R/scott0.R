@@ -1,3 +1,46 @@
+.phylostructure2newick <- function(o){
+	n <- length( o$tip.label )
+	nnode <- o$Nnode 
+	nwks <- rep('', n+nnode )
+	nwks[ 1:n ] <- sapply( 1:n, function(u) glue::glue( '{o$tip.label[u]}:{o$edge.length[o$edge[,2]==u]}' ))
+	queue <- 1:n 
+
+	# compute max distance to tip 
+	mdt <- rep(-Inf, n + nnode ) 
+	mdt[1:n] <- 0 
+	edge0 <- o$edge[ order( o$edge[,2] ), ]
+	queue <- 1:n #edge0[1:n,1] 
+	anc <- rep(NA, n+nnode )
+	anc[ edge0[,2] ] <- edge0[,1]
+	repeat{
+		for ( u in queue ){
+			a <- anc[u] 
+			if (!is.na( a )){
+				mdt[a] <- max( mdt[a], mdt[u]+1 ) 
+			}
+		}
+		queue <- na.omit( anc[ queue] )
+		if ( length( queue ) == 0 )
+			break 
+	}
+
+	ord <- order( mdt ) |> setdiff( 1:n )
+	for (a in ord){
+		dgtrs <- o$edge[ o$edge[,1]==a, 2]
+		nwks[a] <- paste(collapse=',', nwks[dgtrs])
+		edle <- ifelse(a %in% o$edge[,2]
+			, o$edge.length[o$edge[,2]==a]
+			, 0
+			)
+		nwks[a] <- glue::glue( '({nwks[a]}):{edle}' )
+		NWK <- nwks[a] 
+	}
+	nwk <- paste(NWK, ';', sep = '' )
+	nwk
+}
+
+
+
 #' Simulate a coalescent transmission tree 
 #'
 #' This function will return a phylogeny in the `ape` package format with additional attributes showing who infected whom. 
@@ -208,7 +251,7 @@ simtree <- function(
 	waifw <- as.data.frame( waifw )
 	colnames( waifw ) <- c( 'donor', 'recipient', 'time' )
 	tree = structure( list( edge = edge, edge.length = edge.length, tip.label = tip.label, Nnode = nodesAdded  ) , class = 'phylo')
-	tree <- read.tree( text = write.tree( tree )) 
+	tree <- read.tree( text = .phylostructure2newick(tree )) 
 	tree = ladderize( tree )
 	tree$waifw2 <- waifw 
 	tree$waifw <- waifw[ waifw[,1] <= n & waifw[,2] <= n , ]
